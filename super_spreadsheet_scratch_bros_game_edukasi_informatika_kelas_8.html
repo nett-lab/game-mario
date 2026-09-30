@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Super Spreadsheet & Scratch Bros - Petualangan Informatika Kelas 8</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            pixel: ['"Press Start 2P"', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            mario: {
+              red: '#E52521',
+              blue: '#0026FF',
+              yellow: '#FBD000',
+              green: '#43B047',
+              dark: '#141419',
+              pipe: '#22b14c',
+              brick: '#b84418',
+              sky: '#5c94fc'
+            }
+          },
+          boxShadow: {
+            retro: '4px 4px 0px 0px rgba(0,0,0,0.85)',
+            'retro-sm': '2px 2px 0px 0px rgba(0,0,0,0.85)',
+            'retro-lg': '6px 6px 0px 0px rgba(0,0,0,0.9)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .pixelated {
+      image-rendering: pixelated;
+    }
+    @keyframes coinFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-coin {
+      animation: coinFloat 1.8s ease-in-out infinite;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e1e24;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <header class="bg-slate-900 border-b-4 border-slate-800 p-2 sm:p-3 sticky top-0 z-30 shadow-lg">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <!-- Title & Brand -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="w-9 h-9 sm:w-11 sm:h-11 bg-mario-red rounded-lg border-2 border-white shadow-retro-sm flex items-center justify-center text-white font-pixel text-xs sm:text-sm animate-pulse">
+          M
+        </div>
+        <div>
+          <h1 class="font-pixel text-[10px] sm:text-xs text-mario-yellow tracking-wider flex items-center gap-2">
+            SUPER SPREADSHEET BROS
+            <span class="bg-red-600 text-white text-[8px] font-sans px-1.5 py-0.5 rounded font-bold uppercase tracking-normal">Kelas 8</span>
+          </h1>
+          <p class="text-[11px] sm:text-xs text-slate-400 font-medium">SMP NU Assalafie Unggulan • Petualangan Lab Komputer</p>
+        </div>
+      </div>
+
+      <!-- Live Dashboard HUD -->
+      <div class="flex items-center gap-2 sm:gap-4 bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800 text-xs sm:text-sm">
+        <!-- Team Name -->
+        <div class="hidden sm:flex flex-col border-r border-slate-800 pr-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Tim Siswa</span>
+          <span id="hud-team-name" class="font-bold text-emerald-400 truncate max-w-[100px]">Pahlawan Lab</span>
+        </div>
+
+        <!-- Lives / Hearts -->
+        <div class="flex flex-col items-center">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Nyawa (❤️)</span>
+          <div id="hud-hearts" class="flex gap-1 text-red-500 text-sm">
+            <span>❤️</span><span>❤️</span><span>❤️</span>
+          </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="flex flex-col items-center border-l border-slate-800 pl-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Waktu</span>
+          <span id="hud-timer" class="font-pixel text-mario-yellow text-xs sm:text-sm">06:00</span>
+        </div>
+
+        <!-- Score -->
+        <div class="flex flex-col items-center border-l border-slate-800 pl-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Koin Skor</span>
+          <span id="hud-score" class="font-pixel text-amber-400 text-xs sm:text-sm">0000</span>
+        </div>
+
+        <!-- Audio Toggle -->
+        <button id="btn-toggle-audio" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition" title="Suara Musik / SFX">
+          🔊
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-2 sm:p-4 flex flex-col gap-3 relative">
+    
+    <!-- Top Level Indicator Ribbon -->
+    <div class="bg-gradient-to-r from-blue-900/60 via-slate-900 to-indigo-900/60 rounded-xl p-2.5 sm:p-3 border border-slate-800 flex items-center justify-between shadow-inner">
+      <div class="flex items-center gap-2">
+        <span id="world-badge" class="bg-mario-yellow text-slate-950 font-pixel text-[10px] sm:text-xs px-2.5 py-1 rounded shadow-retro-sm">
+          WORLD 1-1
+        </span>
+        <span id="world-title" class="font-bold text-xs sm:text-sm text-slate-200">
+          Grassland Plains: Misteri Kolom Pagar & Statistik
+        </span>
+      </div>
+      <div class="text-[11px] text-slate-400 hidden md:block">
+        Gunakan Tombol <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">A</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">D</kbd> atau <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Panah</kbd> untuk Jalan, <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Spasi</kbd> untuk Lompat!
+      </div>
+    </div>
+
+    <!-- The Game Canvas Container -->
+    <div class="relative w-full aspect-[16/9] max-h-[500px] bg-slate-900 rounded-2xl overflow-hidden border-4 border-slate-800 shadow-2xl">
+      <canvas id="gameCanvas" class="w-full h-full block bg-[#5c94fc]"></canvas>
+
+      <!-- Overlay Start / Pause / Intermission Banner -->
+      <div id="game-overlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+        <div class="max-w-md w-full bg-slate-900 border-2 border-slate-700 rounded-2xl p-6 shadow-retro-lg flex flex-col items-center gap-4">
+          <div class="w-16 h-16 bg-mario-yellow rounded-2xl border-4 border-white shadow-retro flex items-center justify-center font-pixel text-2xl text-slate-900">
+            ?
+          </div>
+          <div>
+            <h2 id="overlay-title" class="font-pixel text-sm sm:text-base text-mario-yellow mb-2">
+              SIAPKAN TIM KALIAN!
+            </h2>
+            <p id="overlay-desc" class="text-xs text-slate-300 leading-relaxed">
+              Kalian akan berpetualang menembus 4 Dunia rintangan Excel & Scratch. Lompatlah ke balok tanda tanya <span class="text-mario-yellow font-bold">[?]</span> untuk membuka misi komputer!
+            </p>
+          </div>
+
+          <div class="w-full flex flex-col gap-2 pt-2">
+            <button id="btn-start-game" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-pixel text-xs rounded-xl shadow-retro border-2 border-white transition active:translate-x-1 active:translate-y-1">
+              MULAI PETUALANGAN ▶
+            </button>
+            <button id="btn-open-team-modal" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold rounded-xl border border-slate-700 transition">
+              👥 Atur Nama Kelompok & Peran
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Floating Alert Pill inside Canvas -->
+      <div id="canvas-alert" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 border border-mario-yellow text-mario-yellow px-4 py-1.5 rounded-full font-pixel text-[10px] shadow-retro-sm opacity-0 pointer-events-none transition-opacity duration-300 z-10 flex items-center gap-2">
+        <span>⭐</span><span id="canvas-alert-text">TANTANGAN DIBUKA!</span>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 p-2 bg-slate-900/60 rounded-xl border border-slate-800/80 sm:hidden">
+      <!-- D-Pad Left/Right -->
+      <div class="flex gap-2">
+        <button id="btn-touch-left" class="w-14 h-12 bg-slate-800 active:bg-slate-700 rounded-xl border-2 border-slate-700 flex items-center justify-center text-xl font-bold active:scale-95 transition shadow-retro-sm">
+          ◀
+        </button>
+        <button id="btn-touch-right" class="w-14 h-12 bg-slate-800 active:bg-slate-700 rounded-xl border-2 border-slate-700 flex items-center justify-center text-xl font-bold active:scale-95 transition shadow-retro-sm">
+          ▶
+        </button>
+      </div>
+
+      <!-- Role Instruction Hint -->
+      <div class="text-[10px] text-center text-slate-400 font-medium leading-tight">
+        <span class="text-amber-400 font-bold block">TIPS TIM:</span>
+        Navigator pandu rumus, Pilot kendalikan Mario!
+      </div>
+
+      <!-- Jump & Action -->
+      <div class="flex gap-2">
+        <button id="btn-touch-jump" class="w-16 h-12 bg-mario-red active:bg-red-500 text-white rounded-xl border-2 border-white font-pixel text-xs active:scale-95 transition shadow-retro-sm">
+          JUMP
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Team Members Role Strip -->
+    <div class="grid grid-cols-3 gap-2 text-xs">
+      <div class="bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-blue-600/30 text-blue-400 border border-blue-500/50 flex items-center justify-center font-bold text-[10px]">
+          🎮
+        </div>
+        <div class="truncate">
+          <div class="text-[9px] uppercase font-bold text-slate-500">Pilot (Kontroler)</div>
+          <div id="role-pilot-name" class="font-semibold text-slate-200 truncate">Siswa 1</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-amber-600/30 text-amber-400 border border-amber-500/50 flex items-center justify-center font-bold text-[10px]">
+          📖
+        </div>
+        <div class="truncate">
+          <div class="text-[9px] uppercase font-bold text-slate-500">Navigator (Catatan)</div>
+          <div id="role-navigator-name" class="font-semibold text-slate-200 truncate">Siswa 2 & 3</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
+        <div class="w-6 h-6 rounded-md bg-emerald-600/30 text-emerald-400 border border-emerald-500/50 flex items-center justify-center font-bold text-[10px]">
+          🔍
+        </div>
+        <div class="truncate">
+          <div class="text-[9px] uppercase font-bold text-slate-500">Debugger (Validasi)</div>
+          <div id="role-debugger-name" class="font-semibold text-slate-200 truncate">Siswa 4</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="modal-team" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-lg rounded-2xl p-5 shadow-retro-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="font-pixel text-xs sm:text-sm text-mario-yellow flex items-center gap-2">
+          <span>👥</span> REGISTRASI TIM LABORATORIUM
+        </h3>
+        <button id="btn-close-team-modal" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <form id="team-setup-form" class="mt-4 space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Kelompok / Tim:</label>
+          <input type="text" id="input-team-name" required placeholder="Contoh: Tim Algoritma Cerdas" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-mario-yellow">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          <div>
+            <label class="block text-[11px] font-semibold text-blue-400 mb-1">🎮 Pilot (Keyboard):</label>
+            <input type="text" id="input-pilot" placeholder="Nama siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-amber-400 mb-1">📖 Navigator (Rumus):</label>
+            <input type="text" id="input-navigator" placeholder="Nama 1 atau 2 siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-emerald-400 mb-1">🔍 Debugger (Koreksi):</label>
+            <input type="text" id="input-debugger" placeholder="Nama siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
+          <p class="font-bold text-slate-300">Pedoman Strategi Bermain:</p>
+          <p>• <strong>Pilot:</strong> Menggerakkan Mario dan mengetikkan formula di komputer.</p>
+          <p>• <strong>Navigator:</strong> Menemukan rumus yang tepat di lembar catatan materi.</p>
+          <p>• <strong>Debugger:</strong> Memeriksa tanda baca (<code>$</code>, <code>;</code>, <code>" "</code>) sebelum dikirim.</p>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="submit" class="w-full py-2.5 bg-mario-yellow text-slate-950 font-bold font-pixel text-xs rounded-xl shadow-retro-sm border border-white hover:bg-amber-300">
+            SIMPAN & TERAPKAN TIM
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-task" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-slate-700 w-full max-w-3xl rounded-2xl shadow-retro-lg overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-800 p-3 sm:p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span id="task-badge" class="bg-mario-yellow text-slate-950 font-pixel text-[10px] px-2 py-0.5 rounded shadow-retro-sm">
+            LEVEL MISI
+          </span>
+          <h3 id="task-title" class="font-bold text-sm sm:text-base text-white">
+            Tantangan Laboratorium
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400">Peluang:</span>
+          <span id="task-penalty-warning" class="text-xs font-bold text-amber-400">1x Coba Gagal = -1 ❤️</span>
+        </div>
+      </div>
+
+      <!-- Modal Body (Dynamic Task Content) -->
+      <div id="task-body" class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 text-slate-200 text-sm">
+        <!-- Content injected dynamically via JavaScript -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-950 p-3 sm:p-4 border-t border-slate-800 flex items-center justify-between gap-3">
+        <div id="task-feedback" class="text-xs font-medium text-slate-400 flex items-center gap-1.5 truncate">
+          <span>💡</span> Diskusikan bersama rekan satu tim sebelum menekan tombol kirim.
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="btn-submit-task" class="py-2.5 px-5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-pixel text-xs rounded-xl shadow-retro-sm border-2 border-white transition active:scale-95">
+            EKSEKUSI RUMUS ▶
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-gameover" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-white w-full max-w-md rounded-2xl p-6 text-center shadow-retro-lg flex flex-col items-center gap-4">
+      <div id="gameover-icon" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-retro border-2 border-white">
+        🏆
+      </div>
+      <div>
+        <h2 id="gameover-title" class="font-pixel text-base sm:text-lg text-mario-yellow mb-2">
+          SELAMAT! KERAJAAN TERSUSUN RAPI!
+        </h2>
+        <p id="gameover-message" class="text-xs text-slate-300 leading-relaxed">
+          Tim kalian berhasil menaklukkan seluruh rintangan rumus Excel dan logika Scratch.
+        </p>
+      </div>
+
+      <!-- Stats Recap Card -->
+      <div class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-2 text-left">
+        <div class="flex justify-between">
+          <span class="text-slate-400">Nama Tim:</span>
+          <span id="recap-team-name" class="font-bold text-white">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Total Koin Skor:</span>
+          <span id="recap-score" class="font-pixel text-amber-400">0</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Sisa Nyawa Tim:</span>
+          <span id="recap-hearts" class="font-bold text-red-400">❤️❤️❤️</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Sisa Waktu:</span>
+          <span id="recap-time" class="font-mono text-emerald-400">00:00</span>
+        </div>
+      </div>
+
+      <button id="btn-restart-game" class="w-full py-3 bg-mario-red hover:bg-red-500 text-white font-pixel text-xs rounded-xl shadow-retro border-2 border-white">
+        MAIN LAGI / GANTI TIM ↺
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* Robust Audio Synthesizer without external dependencies */
+    class RetroSoundSystem {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.ctx = new AudioContextClass();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playJump() {
+        if (this.muted || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.16);
+        } catch (e) {}
+      }
+
+      playCoin() {
+        if (this.muted || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(987.77, this.ctx.currentTime); // B5
+          osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime + 0.08); // E6
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.32);
+        } catch (e) {}
+      }
+
+      playPowerup() {
+        if (this.muted || !this.ctx) return;
+        try {
+          const notes = [330, 392, 659, 523, 587, 784];
+          notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.06);
+            gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.06);
+            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + (idx + 1) * 0.06);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + idx * 0.06);
+            osc.stop(this.ctx.currentTime + (idx + 1) * 0.06);
+          });
+        } catch (e) {}
+      }
+
+      playError() {
+        if (this.muted || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+          osc.frequency.linearRampToValueAtTime(70, this.ctx.currentTime + 0.25);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.26);
+        } catch (e) {}
+      }
+    }
+
+    const sound = new RetroSoundSystem();
+  </script>
+
+  <script>
+    const GAME_CONFIG = {
+      initialTime: 360, // 6 minutes per run
+      initialLives: 3,
+      gravity: 0.58,
+      playerSpeed: 3.8,
+      jumpForce: -11.5,
+    };
+
+    const WORLDS = [
+      {
+        id: 1,
+        code: "WORLD 1-1",
+        name: "Grassland Plains: Kolom Sempit & Statistik Excel",
+        bg: "#5c94fc",
+        description: "Lompat ke Balok [?] untuk memecahkan eror ##### dan menghitung formula statistik!",
+        task: {
+          title: "Tantangan 1: Perbaikan Sel ##### dan Formula Statistik",
+          type: "excel-basic",
+          guide: "Perhatikan tabel kas mini. Kolom B sempit sehingga muncul #####. Di kolom D, tentukan rumus Total dan Rata-rata.",
+          subTasks: [
+            {
+              id: "q1",
+              question: "1. Apa yang harus dilakukan bila pada sel muncul tanda pagar rapat '#####'?",
+              options: [
+                { id: "A", text: "Menghapus seluruh isi tabel" },
+                { id: "B", text: "Melebarkan ukuran kolom sel (Double klik pembatas kolom)" },
+                { id: "C", text: "Mengetik ulang angka dengan huruf kecil" }
+              ],
+              correct: "B"
+            },
+            {
+              id: "q2",
+              question: "2. Tuliskan rumus yang benar untuk menjumlahkan Total Belanja dari sel D3 sampai D7:",
+              type: "input",
+              expected: ["=SUM(D3:D7)", "=SUM(D3:D7)"],
+              placeholder: "Contoh: =SUM(D3:D7)"
+            },
+            {
+              id: "q3",
+              question: "3. Tuliskan rumus yang benar untuk mencari Nilai Rata-rata dari sel D3 sampai D7:",
+              type: "input",
+              expected: ["=AVERAGE(D3:D7)", "=AVERAGE(D3:D7)"],
+              placeholder: "Contoh: =AVERAGE(D3:D7)"
+            }
+          ]
+        }
+      },
+      {
+        id: 2,
+        code: "WORLD 2-1",
+        name: "Underground Pipes: Format Rp, Sort & Filter",
+        bg: "#000000",
+        description: "Koin macet di pipa karena angka diketik 'Rp' secara manual! Perbaiki dengan format Accounting.",
+        task: {
+          title: "Tantangan 2: Format Accounting & Penyaringan Data",
+          type: "excel-format",
+          guide: "Analisis tabel prajurit Koopa. Tentukan cara format mata uang yang benar dan pengoperasian filter.",
+          subTasks: [
+            {
+              id: "q1",
+              question: "1. Mengapa mengetik tulisan 'Rp' secara manual (misal: 'Rp 5000') menyebabkan rumus hitung error?",
+              options: [
+                { id: "A", text: "Karena Excel menganggap data tersebut sebagai Teks, bukan Angka" },
+                { id: "B", text: "Karena huruf Rp hanya berlaku di Microsoft Word" },
+                { id: "C", text: "Karena keyboard komputer belum mendukung bahasa Indonesia" }
+              ],
+              correct: "A"
+            },
+            {
+              id: "q2",
+              question: "2. Fitur apa yang digunakan jika kita hanya ingin menampilkan baris musuh dengan kategori 'Koopa' saja?",
+              options: [
+                { id: "A", text: "Merge & Center" },
+                { id: "B", text: "Filter (Ikon Corong di Tab Data / Home)" },
+                { id: "C", text: "Wrap Text" }
+              ],
+              correct: "B"
+            },
+            {
+              id: "q3",
+              question: "3. Jika ingin mengurutkan koin harta dari yang TERBESAR ke TERKECIL, menu Sort mana yang dipilih?",
+              options: [
+                { id: "A", text: "Sort A to Z" },
+                { id: "B", text: "Sort Largest to Smallest" },
+                { id: "C", text: "Sort Smallest to Largest" }
+              ],
+              correct: "B"
+            }
+          ]
+        }
+      },
+      {
+        id: 3,
+        code: "WORLD 3-1",
+        name: "Lava Bridge: VLOOKUP & Kunci Gembok Absolut ($)",
+        bg: "#4a1200",
+        description: "Jembatan lahar putus akibat eror #N/A! Sambungkan dengan rumus VLOOKUP dan kunci $ (F4).",
+        task: {
+          title: "Tantangan 3: Formula Pencarian Tabel VLOOKUP",
+          type: "excel-vlookup",
+          guide: "Perhatikan tabel kasir senjata. Tabel master referensi berada di sel $G$2:$I$5. Kita ingin mencari Nama Senjata di kolom ke-2 berdasarkan kode di sel B2.",
+          subTasks: [
+            {
+              id: "q1",
+              question: "1. Tombol sakti pada keyboard yang digunakan untuk mengunci tabel referensi dengan tanda dollar ($) adalah:",
+              options: [
+                { id: "A", text: "F2" },
+                { id: "B", text: "F4" },
+                { id: "C", text: "F12" }
+              ],
+              correct: "B"
+            },
+            {
+              id: "q2",
+              question: "2. Tuliskan rumus VLOOKUP lengkap untuk mencari Nama Senjata di sel C2 (Kode di B2, Tabel di $G$2:$I$5, Kolom ke-2, Exact Match):",
+              type: "input",
+              expected: [
+                "=VLOOKUP(B2;$G$2:$I$5;2;0)",
+                "=VLOOKUP(B2,$G$2:$I$5,2,0)",
+                "=VLOOKUP(B2;$G$2:$I$5;2;FALSE)",
+                "=VLOOKUP(B2,$G$2:$I$5,2,FALSE)"
+              ],
+              placeholder: "=VLOOKUP(B2;$G$2:$I$5;2;0)"
+            },
+            {
+              id: "q3",
+              question: "3. Apa arti tanda 0 (atau FALSE) di bagian paling akhir rumus VLOOKUP?",
+              options: [
+                { id: "A", text: "Data dicari dengan kecocokan persis 100% (Exact Match)" },
+                { id: "B", text: "Hasil perhitungan akan dikalikan dengan nol" },
+                { id: "C", text: "Menghapus data jika rumus tidak ditemukan" }
+              ],
+              correct: "A"
+            }
+          ]
+        }
+      },
+      {
+        id: 4,
+        code: "WORLD 4-1",
+        name: "Bowser's Castle: Logika IF & Perulangan Scratch",
+        bg: "#2b0a3d",
+        description: "Kalahkan Bowser dengan memprogram Perisai Logika IF dan Balok Patroli Scratch!",
+        task: {
+          title: "Tantangan 4: Gerbang Logika IF & Algoritma Scratch",
+          type: "scratch-puzzle",
+          guide: "Bagian A: Susun rumus IF. Bagian B: Urutkan balok kode Scratch agar ksatria berpatroli bolak-balik tanpa terbalik!",
+          subTasks: [
+            {
+              id: "q1",
+              question: "1. Tuliskan rumus logika IF pada sel Status (E2): Jika Nilai (C2) >= 75 maka 'MENANG', jika tidak maka 'KALAH':",
+              type: "input",
+              expected: [
+                '=IF(C2>=75;"MENANG";"KALAH")',
+                '=IF(C2>=75,"MENANG","KALAH")',
+                '=IF(C2>=75; "MENANG"; "KALAH")',
+                '=IF(C2>=75, "MENANG", "KALAH")'
+              ],
+              placeholder: '=IF(C2>=75;"MENANG";"KALAH")'
+            },
+            {
+              id: "q2",
+              question: "2. Susun urutan 4 balok kode Scratch berikut agar Sprite berjalan bolak-balik tanpa henti:",
+              type: "scratch-ordering",
+              blocks: [
+                { id: "b1", text: "when 🚩 clicked", order: 1 },
+                { id: "b2", text: "set rotation style [left-right]", order: 2 },
+                { id: "b3", text: "forever", order: 3, hasChildren: true },
+                { id: "b4", text: "move (10) steps & if on edge, bounce", order: 4 }
+              ]
+            }
+          ]
+        }
+      }
+    ];
+
+    let gameState = {
+      currentWorldIdx: 0,
+      lives: GAME_CONFIG.initialLives,
+      score: 0,
+      timeLeft: GAME_CONFIG.initialTime,
+      timerInterval: null,
+      isPlaying: false,
+      isPaused: false,
+      activeModal: false,
+      team: {
+        name: "Pahlawan Lab",
+        pilot: "Siswa 1",
+        navigator: "Siswa 2 & 3",
+        debugger: "Siswa 4"
+      }
+    };
+  </script>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Virtual Internal Canvas Dimensions for crisp pixel ratio
+    const V_WIDTH = 800;
+    const V_HEIGHT = 450;
+    canvas.width = V_WIDTH;
+    canvas.height = V_HEIGHT;
+
+    // Player Object Model
+    const player = {
+      x: 60,
+      y: 300,
+      w: 24,
+      h: 32,
+      vx: 0,
+      vy: 0,
+      isGrounded: false,
+      facing: 'right',
+      frame: 0,
+      animTimer: 0
+    };
+
+    // Controller Inputs State
+    const keys = {
+      left: false,
+      right: false,
+      jump: false
+    };
+
+    // World Map Entities
+    let platforms = [];
+    let questionBlocks = [];
+    let coins = [];
+    let flagPole = null;
+
+    // Setup World Objects per Stage
+    function buildWorld(worldIdx) {
+      platforms = [];
+      questionBlocks = [];
+      coins = [];
+
+      // Ground Base
+      platforms.push({ x: 0, y: 390, w: 1200, h: 60, type: 'ground' });
+
+      if (worldIdx === 0) { // World 1: Grassland
+        platforms.push({ x: 180, y: 310, w: 110, h: 22, type: 'brick' });
+        platforms.push({ x: 400, y: 260, w: 130, h: 22, type: 'brick' });
+        platforms.push({ x: 620, y: 220, w: 90, h: 22, type: 'brick' });
+
+        questionBlocks.push({ x: 220, y: 220, w: 28, h: 28, hit: false, bounce: 0 });
+        questionBlocks.push({ x: 440, y: 170, w: 28, h: 28, hit: false, bounce: 0 });
+
+        coins.push({ x: 290, y: 270, w: 16, h: 20, collected: false });
+        coins.push({ x: 480, y: 220, w: 16, h: 20, collected: false });
+        coins.push({ x: 650, y: 170, w: 16, h: 20, collected: false });
+
+        flagPole = { x: 740, y: 180, w: 10, h: 210, reached: false };
+      } 
+      else if (worldIdx === 1) { // World 2: Underground
+        platforms.push({ x: 140, y: 330, w: 70, h: 60, type: 'pipe' });
+        platforms.push({ x: 280, y: 280, w: 130, h: 22, type: 'brick' });
+        platforms.push({ x: 480, y: 290, w: 80, h: 100, type: 'pipe' });
+        platforms.push({ x: 600, y: 230, w: 100, h: 22, type: 'brick' });
+
+        questionBlocks.push({ x: 330, y: 190, w: 28, h: 28, hit: false, bounce: 0 });
+
+        coins.push({ x: 290, y: 240, w: 16, h: 20, collected: false });
+        coins.push({ x: 380, y: 240, w: 16, h: 20, collected: false });
+        coins.push({ x: 640, y: 180, w: 16, h: 20, collected: false });
+
+        flagPole = { x: 740, y: 180, w: 10, h: 210, reached: false };
+      }
+      else if (worldIdx === 2) { // World 3: Lava
+        // Broken ground with gaps
+        platforms = [
+          { x: 0, y: 390, w: 220, h: 60, type: 'ground' },
+          { x: 290, y: 390, w: 240, h: 60, type: 'ground' },
+          { x: 600, y: 390, w: 250, h: 60, type: 'ground' },
+          { x: 230, y: 300, w: 50, h: 20, type: 'brick' },
+          { x: 540, y: 300, w: 50, h: 20, type: 'brick' }
+        ];
+
+        questionBlocks.push({ x: 380, y: 260, w: 28, h: 28, hit: false, bounce: 0 });
+        coins.push({ x: 245, y: 260, w: 16, h: 20, collected: false });
+        coins.push({ x: 555, y: 260, w: 16, h: 20, collected: false });
+
+        flagPole = { x: 740, y: 180, w: 10, h: 210, reached: false };
+      }
+      else { // World 4: Bowser Castle
+        platforms.push({ x: 160, y: 320, w: 100, h: 22, type: 'brick' });
+        platforms.push({ x: 320, y: 260, w: 160, h: 22, type: 'brick' });
+        platforms.push({ x: 540, y: 200, w: 120, h: 22, type: 'brick' });
+
+        questionBlocks.push({ x: 380, y: 170, w: 28, h: 28, hit: false, bounce: 0 });
+        coins.push({ x: 200, y: 280, w: 16, h: 20, collected: false });
+        coins.push({ x: 580, y: 150, w: 16, h: 20, collected: false });
+
+        flagPole = { x: 730, y: 180, w: 10, h: 210, reached: false };
+      }
+
+      // Reset Player Position
+      player.x = 40;
+      player.y = 340;
+      player.vx = 0;
+      player.vy = 0;
+    }
+  </script>
+
+  <script>
+    function updatePhysics() {
+      if (!gameState.isPlaying || gameState.isPaused || gameState.activeModal) return;
+
+      // Horizontal Movement
+      if (keys.left) {
+        player.vx = -GAME_CONFIG.playerSpeed;
+        player.facing = 'left';
+      } else if (keys.right) {
+        player.vx = GAME_CONFIG.playerSpeed;
+        player.facing = 'right';
+      } else {
+        player.vx *= 0.75;
+        if (Math.abs(player.vx) < 0.1) player.vx = 0;
+      }
+
+      // Jump Impulse
+      if (keys.jump && player.isGrounded) {
+        player.vy = GAME_CONFIG.jumpForce;
+        player.isGrounded = false;
+        sound.playJump();
+      }
+
+      // Apply Gravity
+      player.vy += GAME_CONFIG.gravity;
+
+      // Update positions
+      player.x += player.vx;
+      player.y += player.vy;
+
+      // Boundary Checks
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.w > V_WIDTH) player.x = V_WIDTH - player.w;
+
+      // Pit Fall Check (Lava in World 3)
+      if (player.y > V_HEIGHT + 50) {
+        handlePitFall();
+        return;
+      }
+
+      // Platform Collisions
+      player.isGrounded = false;
+      platforms.forEach(plat => {
+        // Vertical Collision from top
+        if (
+          player.x + player.w > plat.x &&
+          player.x < plat.x + plat.w &&
+          player.y + player.h >= plat.y &&
+          player.y + player.h <= plat.y + 16 &&
+          player.vy >= 0
+        ) {
+          player.y = plat.y - player.h;
+          player.vy = 0;
+          player.isGrounded = true;
+        }
+      });
+
+      // Question Block Collisions (Hit from bottom)
+      questionBlocks.forEach(qb => {
+        // Platform top standing
+        if (
+          player.x + player.w > qb.x &&
+          player.x < qb.x + qb.w &&
+          player.y + player.h >= qb.y &&
+          player.y + player.h <= qb.y + 12 &&
+          player.vy >= 0
+        ) {
+          player.y = qb.y - player.h;
+          player.vy = 0;
+          player.isGrounded = true;
+        }
+
+        // Head hit from bottom
+        if (
+          player.x + player.w > qb.x &&
+          player.x < qb.x + qb.w &&
+          player.y <= qb.y + qb.h + 6 &&
+          player.y >= qb.y + qb.h - 10 &&
+          player.vy < 0
+        ) {
+          player.vy = 2; // Bounce back down
+          if (!qb.hit) {
+            qb.hit = true;
+            qb.bounce = 8;
+            sound.playCoin();
+            gameState.score += 100;
+            updateHUD();
+            showCanvasAlert("MISI INFORMATIKA TERBUKA!");
+            setTimeout(() => {
+              openTaskModal();
+            }, 300);
+          }
+        }
+
+        // Animate block bounce recovery
+        if (qb.bounce > 0) {
+          qb.bounce -= 1;
+        }
+      });
+
+      // Coin Pickups
+      coins.forEach(coin => {
+        if (!coin.collected) {
+          if (
+            player.x + player.w > coin.x &&
+            player.x < coin.x + coin.w &&
+            player.y + player.h > coin.y &&
+            player.y < coin.y + coin.h
+          ) {
+            coin.collected = true;
+            sound.playCoin();
+            gameState.score += 50;
+            updateHUD();
+          }
+        }
+      });
+
+      // Flag Pole Check (Finish Line)
+      if (flagPole && !flagPole.reached) {
+        if (
+          player.x + player.w >= flagPole.x &&
+          player.x <= flagPole.x + flagPole.w &&
+          player.y + player.h >= flagPole.y
+        ) {
+          flagPole.reached = true;
+          handleWorldClear();
+        }
+      }
+    }
+
+    function handlePitFall() {
+      sound.playError();
+      gameState.lives -= 1;
+      updateHUD();
+      if (gameState.lives <= 0) {
+        triggerGameOver(false);
+      } else {
+        player.x = 40;
+        player.y = 250;
+        player.vx = 0;
+        player.vy = 0;
+        showCanvasAlert("TERJATUH! -1 NYAWA TIM");
+      }
+    }
+
+    function showCanvasAlert(text) {
+      const alertEl = document.getElementById('canvas-alert');
+      const textEl = document.getElementById('canvas-alert-text');
+      textEl.textContent = text;
+      alertEl.classList.remove('opacity-0');
+      alertEl.classList.add('opacity-100');
+      setTimeout(() => {
+        alertEl.classList.remove('opacity-100');
+        alertEl.classList.add('opacity-0');
+      }, 2000);
+    }
+  </script>
+
+  <script>
+    function drawGame() {
+      // Clear Background by World Theme
+      const curWorld = WORLDS[gameState.currentWorldIdx];
+      ctx.fillStyle = curWorld.bg;
+      ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+
+      // Decorative Background Scenery
+      if (gameState.currentWorldIdx === 0) {
+        // Sky Clouds
+        ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+        ctx.beginPath();
+        ctx.arc(140, 70, 24, 0, Math.PI * 2);
+        ctx.arc(170, 65, 32, 0, Math.PI * 2);
+        ctx.arc(200, 70, 24, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(520, 90, 20, 0, Math.PI * 2);
+        ctx.arc(545, 85, 28, 0, Math.PI * 2);
+        ctx.arc(570, 90, 20, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Distant Hills
+        ctx.fillStyle = "#00a800";
+        ctx.beginPath();
+        ctx.arc(280, 420, 110, Math.PI, 0);
+        ctx.fill();
+      } else if (gameState.currentWorldIdx === 2) {
+        // Lava glow
+        ctx.fillStyle = "#ff2200";
+        ctx.fillRect(0, 410, V_WIDTH, 40);
+        ctx.fillStyle = "#ffdd00";
+        for (let i = 0; i < V_WIDTH; i += 40) {
+          ctx.beginPath();
+          ctx.arc(i + 20, 415, 8, 0, Math.PI);
+          ctx.fill();
+        }
+      }
+
+      // Draw Platforms
+      platforms.forEach(p => {
+        if (p.type === 'ground') {
+          ctx.fillStyle = gameState.currentWorldIdx === 2 ? "#552211" : "#c84c0c";
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+          // Green grass fringe on top
+          ctx.fillStyle = gameState.currentWorldIdx === 2 ? "#883311" : "#00a800";
+          ctx.fillRect(p.x, p.y, p.w, 10);
+        } else if (p.type === 'pipe') {
+          // Green Warp Pipe
+          ctx.fillStyle = "#00a800";
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+          ctx.fillStyle = "#006400";
+          ctx.fillRect(p.x + p.w - 12, p.y, 12, p.h);
+          // Pipe Lip Rim
+          ctx.fillStyle = "#00a800";
+          ctx.fillRect(p.x - 4, p.y - 12, p.w + 8, 14);
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(p.x - 4, p.y - 12, p.w + 8, 14);
+        } else {
+          // Classic Brick Pattern
+          ctx.fillStyle = "#b84418";
+          ctx.fillRect(p.x, p.y, p.w, p.h);
+          ctx.strokeStyle = "#141419";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(p.x, p.y, p.w, p.h);
+          // Brick grooves
+          ctx.beginPath();
+          ctx.moveTo(p.x + p.w / 2, p.y);
+          ctx.lineTo(p.x + p.w / 2, p.y + p.h);
+          ctx.stroke();
+        }
+      });
+
+      // Draw Question Mystery Blocks [?]
+      questionBlocks.forEach(qb => {
+        const renderY = qb.y - qb.bounce;
+        if (!qb.hit) {
+          ctx.fillStyle = "#fc9838";
+          ctx.fillRect(qb.x, renderY, qb.w, qb.h);
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(qb.x, renderY, qb.w, qb.h);
+
+          // Inlay rivets
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(qb.x + 3, renderY + 3, 2, 2);
+          ctx.fillRect(qb.x + qb.w - 5, renderY + 3, 2, 2);
+          ctx.fillRect(qb.x + 3, renderY + qb.h - 5, 2, 2);
+          ctx.fillRect(qb.x + qb.w - 5, renderY + qb.h - 5, 2, 2);
+
+          // White Question Mark
+          ctx.fillStyle = "#ffffff";
+          ctx.font = '14px "Press Start 2P", monospace';
+          ctx.fillText("?", qb.x + 8, renderY + 20);
+        } else {
+          // Empty Solid Brown Block
+          ctx.fillStyle = "#8b5a2b";
+          ctx.fillRect(qb.x, renderY, qb.w, qb.h);
+          ctx.strokeStyle = "#3e240a";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(qb.x, renderY, qb.w, qb.h);
+        }
+      });
+
+      // Draw Coins
+      coins.forEach(c => {
+        if (!c.collected) {
+          ctx.fillStyle = "#ffd700";
+          ctx.beginPath();
+          ctx.ellipse(c.x + c.w / 2, c.y + c.h / 2, c.w / 2, c.h / 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#b8860b";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // Coin shine
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(c.x + c.w / 2 - 2, c.y + 4, 3, c.h - 8);
+        }
+      });
+
+      // Draw Flag Pole (Exit Target)
+      if (flagPole) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(flagPole.x, flagPole.y, flagPole.w, flagPole.h);
+        // Golden Ball on Top
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.arc(flagPole.x + flagPole.w / 2, flagPole.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pennant Flag
+        ctx.fillStyle = flagPole.reached ? "#43b047" : "#e52521";
+        ctx.beginPath();
+        ctx.moveTo(flagPole.x + flagPole.w, flagPole.y + 10);
+        ctx.lineTo(flagPole.x + flagPole.w + 35, flagPole.y + 25);
+        ctx.lineTo(flagPole.x + flagPole.w, flagPole.y + 40);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Draw Mario Character (Vector Pixel Render)
+      drawMario(player.x, player.y, player.w, player.h, player.facing);
+    }
+
+    function drawMario(x, y, w, h, facing) {
+      ctx.save();
+      if (facing === 'left') {
+        ctx.translate(x + w, y);
+        ctx.scale(-1, 1);
+        x = 0;
+        y = 0;
+      }
+
+      // Red Cap & Shirt
+      ctx.fillStyle = "#e52521";
+      ctx.fillRect(x + 4, y, 16, 7); // Cap
+      ctx.fillRect(x + 10, y + 5, 12, 4); // Visor
+      ctx.fillRect(x + 4, y + 14, 16, 8); // Shirt
+
+      // Face / Skin Tone
+      ctx.fillStyle = "#ffcca3";
+      ctx.fillRect(x + 6, y + 7, 12, 7);
+
+      // Mustache & Hair
+      ctx.fillStyle = "#4a2a00";
+      ctx.fillRect(x + 2, y + 7, 4, 6); // Hair
+      ctx.fillRect(x + 10, y + 10, 8, 3); // Mustache
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(x + 12, y + 8, 2, 2); // Eye
+
+      // Blue Overalls
+      ctx.fillStyle = "#0026ff";
+      ctx.fillRect(x + 5, y + 18, 14, 8);
+      ctx.fillStyle = "#fbd000";
+      ctx.fillRect(x + 7, y + 19, 2, 2); // Overall button
+      ctx.fillRect(x + 15, y + 19, 2, 2);
+
+      // Brown Shoes
+      ctx.fillStyle = "#633a00";
+      ctx.fillRect(x + 2, y + 26, 8, 6);
+      ctx.fillRect(x + 14, y + 26, 8, 6);
+
+      ctx.restore();
+    }
+  </script>
+
+  <script>
+    function openTaskModal() {
+      gameState.activeModal = true;
+      const modal = document.getElementById('modal-task');
+      const curWorld = WORLDS[gameState.currentWorldIdx];
+      const task = curWorld.task;
+
+      document.getElementById('task-badge').textContent = curWorld.code;
+      document.getElementById('task-title').textContent = task.title;
+
+      const body = document.getElementById('task-body');
+      body.innerHTML = '';
+
+      // Guide Header Alert
+      const guideBox = document.createElement('div');
+      guideBox.className = "p-3 bg-blue-950/60 rounded-xl border border-blue-800 text-xs text-blue-200 leading-relaxed";
+      guideBox.innerHTML = `<strong>Petunjuk Misi:</strong> ${task.guide}`;
+      body.appendChild(guideBox);
+
+      // Build Sub-Tasks based on Type
+      task.subTasks.forEach((st, idx) => {
+        const itemBox = document.createElement('div');
+        itemBox.className = "p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2";
+
+        const qTitle = document.createElement('p');
+        qTitle.className = "font-semibold text-slate-100 text-xs sm:text-sm";
+        qTitle.textContent = st.question;
+        itemBox.appendChild(qTitle);
+
+        if (st.options) {
+          // Multiple Choice Options
+          const optsGrid = document.createElement('div');
+          optsGrid.className = "space-y-1.5 pt-1";
+          st.options.forEach(opt => {
+            const label = document.createElement('label');
+            label.className = "flex items-center gap-2.5 p-2 bg-slate-900 hover:bg-slate-800/80 rounded-lg cursor-pointer border border-slate-800 text-xs transition";
+            label.innerHTML = `
+              <input type="radio" name="${st.id}" value="${opt.id}" class="accent-mario-yellow">
+              <span class="text-slate-300"><strong>${opt.id}.</strong> ${opt.text}</span>
+            `;
+            optsGrid.appendChild(label);
+          });
+          itemBox.appendChild(optsGrid);
+        } else if (st.type === "input") {
+          // Direct Formula Input Field
+          const inputWrap = document.createElement('div');
+          inputWrap.className = "pt-1 flex flex-col gap-1";
+          inputWrap.innerHTML = `
+            <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 focus-within:border-mario-yellow">
+              <span class="text-xs font-mono text-emerald-400 font-bold">fx</span>
+              <input type="text" id="${st.id}" placeholder="${st.placeholder}" class="bg-transparent text-white text-xs sm:text-sm w-full focus:outline-none font-mono">
+            </div>
+            <span class="text-[10px] text-slate-500 italic">*Tips: Awali dengan tanda sama dengan (=). Tanda koma atau titik koma didukung.</span>
+          `;
+          itemBox.appendChild(inputWrap);
+        } else if (st.type === "scratch-ordering") {
+          // Interactive Scratch Blocks Sorter
+          const scratchContainer = document.createElement('div');
+          scratchContainer.className = "space-y-2 pt-1";
+          scratchContainer.innerHTML = `
+            <p class="text-[11px] text-amber-300">Klik tombol urutan untuk menyusun balok dari atas ke bawah:</p>
+            <div id="scratch-block-list" class="space-y-1.5"></div>
+          `;
+          itemBox.appendChild(scratchContainer);
+
+          setTimeout(() => {
+            renderScratchSorter(st.blocks);
+          }, 50);
+        }
+
+        body.appendChild(itemBox);
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    // Interactive Scratch Block Ordering Logic
+    let scratchUserOrder = [];
+    function renderScratchSorter(initialBlocks) {
+      const container = document.getElementById('scratch-block-list');
+      if (!container) return;
+      container.innerHTML = '';
+      
+      // Shuffle initially
+      if (scratchUserOrder.length === 0) {
+        scratchUserOrder = [...initialBlocks].sort(() => Math.random() - 0.5);
+      }
+
+      scratchUserOrder.forEach((block, idx) => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-2 rounded-lg text-xs font-bold text-white shadow-retro-sm transition";
+        
+        // Color by block category
+        if (block.text.includes("when")) row.classList.add("bg-amber-500");
+        else if (block.text.includes("rotation")) row.classList.add("bg-blue-600");
+        else if (block.text.includes("forever")) row.classList.add("bg-orange-500");
+        else row.classList.add("bg-blue-500");
+
+        row.innerHTML = `
+          <span>${idx + 1}. ${block.text}</span>
+          <div class="flex gap-1">
+            <button type="button" class="btn-move-up px-2 py-0.5 bg-black/40 rounded hover:bg-black/60 text-[10px]" ${idx === 0 ? 'disabled' : ''}>▲</button>
+            <button type="button" class="btn-move-down px-2 py-0.5 bg-black/40 rounded hover:bg-black/60 text-[10px]" ${idx === scratchUserOrder.length - 1 ? 'disabled' : ''}>▼</button>
+          </div>
+        `;
+
+        row.querySelector('.btn-move-up').onclick = () => {
+          if (idx > 0) {
+            const temp = scratchUserOrder[idx];
+            scratchUserOrder[idx] = scratchUserOrder[idx - 1];
+            scratchUserOrder[idx - 1] = temp;
+            renderScratchSorter(initialBlocks);
+          }
+        };
+
+        row.querySelector('.btn-move-down').onclick = () => {
+          if (idx < scratchUserOrder.length - 1) {
+            const temp = scratchUserOrder[idx];
+            scratchUserOrder[idx] = scratchUserOrder[idx + 1];
+            scratchUserOrder[idx + 1] = temp;
+            renderScratchSorter(initialBlocks);
+          }
+        };
+
+        container.appendChild(row);
+      });
+    }
+  </script>
+
+  <script>
+    function normalizeFormula(str) {
+      if (!str) return "";
+      return str.replace(/\s+/g, '').toUpperCase();
+    }
+
+    document.getElementById('btn-submit-task').addEventListener('click', () => {
+      const curWorld = WORLDS[gameState.currentWorldIdx];
+      const task = curWorld.task;
+      let allCorrect = true;
+      let errorMsg = "";
+
+      // Validate each subtask
+      for (const st of task.subTasks) {
+        if (st.options) {
+          const selected = document.querySelector(`input[name="${st.id}"]:checked`);
+          if (!selected || selected.value !== st.correct) {
+            allCorrect = false;
+            errorMsg = "Masih ada pilihan ganda yang belum tepat. Cek kembali catatan tim!";
+            break;
+          }
+        } else if (st.type === "input") {
+          const inp = document.getElementById(st.id);
+          const userVal = normalizeFormula(inp ? inp.value : "");
+          
+          // Check against allowed variants
+          const match = st.expected.some(exp => normalizeFormula(exp) === userVal);
+          if (!match) {
+            allCorrect = false;
+            errorMsg = `Formula pada pertanyaan "${st.question.substring(0, 24)}..." belum sesuai! Periksa tanda kurung atau titik koma.`;
+            break;
+          }
+        } else if (st.type === "scratch-ordering") {
+          for (let i = 0; i < scratchUserOrder.length; i++) {
+            if (scratchUserOrder[i].order !== i + 1) {
+              allCorrect = false;
+              errorMsg = "Urutan balok Scratch belum logis! Pemicu 'when clicked' harus paling atas.";
+              break;
+            }
+          }
+        }
+      }
+
+      const feedback = document.getElementById('task-feedback');
+      if (allCorrect) {
+        sound.playPowerup();
+        gameState.score += 250;
+        updateHUD();
+        feedback.innerHTML = `<span class="text-emerald-400 font-bold">✓ LUAR BIASA! Seluruh rumus valid & akurat. Pintu gerbang terbuka!</span>`;
+        setTimeout(() => {
+          document.getElementById('modal-task').classList.add('hidden');
+          gameState.activeModal = false;
+          showCanvasAlert("GERBANG TERBUKA! MENUJU TIANG BENDERA!");
+        }, 1200);
+      } else {
+        sound.playError();
+        gameState.lives -= 1;
+        updateHUD();
+        feedback.innerHTML = `<span class="text-red-400 font-bold">✕ SALAH: ${errorMsg} (-1 ❤️)</span>`;
+
+        if (gameState.lives <= 0) {
+          setTimeout(() => {
+            document.getElementById('modal-task').classList.add('hidden');
+            gameState.activeModal = false;
+            triggerGameOver(false);
+          }, 1500);
+        }
+      }
+    });
+
+    function handleWorldClear() {
+      sound.playPowerup();
+      gameState.score += 500;
+      updateHUD();
+
+      if (gameState.currentWorldIdx < WORLDS.length - 1) {
+        gameState.currentWorldIdx += 1;
+        showCanvasAlert(`WORLD CLEAR! MENUJU ${WORLDS[gameState.currentWorldIdx].code}`);
+        scratchUserOrder = [];
+        setTimeout(() => {
+          buildWorld(gameState.currentWorldIdx);
+          updateWorldUI();
+        }, 1200);
+      } else {
+        // Complete Game Victory!
+        triggerGameOver(true);
+      }
+    }
+
+    function triggerGameOver(isVictory) {
+      gameState.isPlaying = false;
+      clearInterval(gameState.timerInterval);
+
+      const modal = document.getElementById('modal-gameover');
+      const icon = document.getElementById('gameover-icon');
+      const title = document.getElementById('gameover-title');
+      const msg = document.getElementById('gameover-message');
+
+      if (isVictory) {
+        sound.playPowerup();
+        icon.textContent = "👑";
+        icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-retro border-2 border-white bg-amber-400 text-slate-900";
+        title.textContent = "VICTORY! KERAJAAN TUNTAS!";
+        msg.textContent = `Selamat kepada ${gameState.team.name}! Seluruh tantangan Excel & Scratch tuntas diselesaikan dengan sempurna!`;
+      } else {
+        sound.playError();
+        icon.textContent = "💀";
+        icon.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-retro border-2 border-white bg-red-600 text-white";
+        title.textContent = "GAME OVER: NYAWA TIM HABIS";
+        msg.textContent = "Jangan patah arang! Pelajari kembali lembar rumus dan ulangi misi bersama kelompok.";
+      }
+
+      document.getElementById('recap-team-name').textContent = gameState.team.name;
+      document.getElementById('recap-score').textContent = gameState.score;
+      document.getElementById('recap-hearts').textContent = "❤️".repeat(Math.max(0, gameState.lives)) || "💔";
+      document.getElementById('recap-time').textContent = formatTime(gameState.timeLeft);
+
+      modal.classList.remove('hidden');
+    }
+  </script>
+
+  <script>
+    // Desktop Keyboard Listeners
+    window.addEventListener('keydown', (e) => {
+      sound.init(); // User gesture audio unlock
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+        keys.jump = true;
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') keys.jump = false;
+    });
+
+    // Touch Pad Button Listeners for Tablets / Mobile
+    const btnLeft = document.getElementById('btn-touch-left');
+    const btnRight = document.getElementById('btn-touch-right');
+    const btnJump = document.getElementById('btn-touch-jump');
+
+    function attachTouchEvents(btn, keyProp) {
+      const start = (e) => {
+        e.preventDefault();
+        sound.init();
+        keys[keyProp] = true;
+      };
+      const end = (e) => {
+        e.preventDefault();
+        keys[keyProp] = false;
+      };
+      btn.addEventListener('touchstart', start, { passive: false });
+      btn.addEventListener('touchend', end, { passive: false });
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('mouseup', end);
+      btn.addEventListener('mouseleave', end);
+    }
+
+    attachTouchEvents(btnLeft, 'left');
+    attachTouchEvents(btnRight, 'right');
+    attachTouchEvents(btnJump, 'jump');
+
+    // Audio Mute Toggle
+    document.getElementById('btn-toggle-audio').addEventListener('click', function() {
+      sound.init();
+      sound.muted = !sound.muted;
+      this.textContent = sound.muted ? '🔇' : '🔊';
+    });
+  </script>
+
+  <script>
+    function updateHUD() {
+      document.getElementById('hud-team-name').textContent = gameState.team.name;
+      document.getElementById('hud-score').textContent = String(gameState.score).padStart(4, '0');
+      
+      const heartsContainer = document.getElementById('hud-hearts');
+      heartsContainer.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const span = document.createElement('span');
+        span.textContent = i < gameState.lives ? '❤️' : '🖤';
+        heartsContainer.appendChild(span);
+      }
+
+      document.getElementById('hud-timer').textContent = formatTime(gameState.timeLeft);
+    }
+
+    function updateWorldUI() {
+      const curWorld = WORLDS[gameState.currentWorldIdx];
+      document.getElementById('world-badge').textContent = curWorld.code;
+      document.getElementById('world-title').textContent = curWorld.name;
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    // Main Timer Loop
+    function startTimer() {
+      clearInterval(gameState.timerInterval);
+      gameState.timerInterval = setInterval(() => {
+        if (gameState.isPlaying && !gameState.isPaused && !gameState.activeModal) {
+          gameState.timeLeft--;
+          updateHUD();
+          if (gameState.timeLeft <= 0) {
+            triggerGameOver(false);
+          }
+        }
+      }, 1000);
+    }
+
+    // Animation Render Loop
+    function gameLoop() {
+      updatePhysics();
+      drawGame();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // UI Buttons and Modal Triggers
+    document.getElementById('btn-start-game').addEventListener('click', () => {
+      sound.init();
+      document.getElementById('game-overlay').classList.add('hidden');
+      gameState.isPlaying = true;
+      buildWorld(gameState.currentWorldIdx);
+      updateWorldUI();
+      updateHUD();
+      startTimer();
+    });
+
+    document.getElementById('btn-open-team-modal').addEventListener('click', () => {
+      document.getElementById('modal-team').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-team-modal').addEventListener('click', () => {
+      document.getElementById('modal-team').classList.add('hidden');
+    });
+
+    document.getElementById('team-setup-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const teamName = document.getElementById('input-team-name').value.trim();
+      const pilot = document.getElementById('input-pilot').value.trim();
+      const navigator = document.getElementById('input-navigator').value.trim();
+      const debuggerName = document.getElementById('input-debugger').value.trim();
+
+      if (teamName) gameState.team.name = teamName;
+      if (pilot) gameState.team.pilot = pilot;
+      if (navigator) gameState.team.navigator = navigator;
+      if (debuggerName) gameState.team.debugger = debuggerName;
+
+      document.getElementById('role-pilot-name').textContent = gameState.team.pilot;
+      document.getElementById('role-navigator-name').textContent = gameState.team.navigator;
+      document.getElementById('role-debugger-name').textContent = gameState.team.debugger;
+      updateHUD();
+
+      document.getElementById('modal-team').classList.add('hidden');
+    });
+
+    document.getElementById('btn-restart-game').addEventListener('click', () => {
+      document.getElementById('modal-gameover').classList.add('hidden');
+      gameState.currentWorldIdx = 0;
+      gameState.lives = GAME_CONFIG.initialLives;
+      gameState.score = 0;
+      gameState.timeLeft = GAME_CONFIG.initialTime;
+      scratchUserOrder = [];
+      buildWorld(0);
+      updateWorldUI();
+      updateHUD();
+      document.getElementById('game-overlay').classList.remove('hidden');
+    });
+
+    // Start Animation Loop on Window Load
+    window.onload = function() {
+      buildWorld(0);
+      updateWorldUI();
+      updateHUD();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+
+  <footer class="bg-slate-950 border-t border-slate-900 py-2.5 px-4 text-center text-[11px] text-slate-500">
+    <p>Media Pembelajaran Berbasis Gamifikasi • Mata Pelajaran Informatika Kelas VIII • SMP NU Assalafie Unggulan</p>
+  </footer>
+
+</body>
+</html>

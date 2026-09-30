@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- SEO & OpenGraph Meta Tags -->
+  <title>Super Spreadsheet & Scratch Bros - Game Edukasi Informatika Kelas 8</title>
+  <meta name="description" content="Game edukasi 2D platformer retro-modern untuk pembelajaran Informatika SMP Kelas 8. Pelajari rumus Excel dan logika Scratch bersama kelompok dengan Realtime Leaderboard Supabase.">
+  <meta name="theme-color" content="#0b0f19">
+
+  <!-- Google Fonts & Tailwind CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            pixel: ['"Press Start 2P"', 'monospace'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            mario: {
+              red: '#E52521',
+              blue: '#0026FF',
+              yellow: '#FBD000',
+              green: '#43B047',
+              pipe: '#22b14c',
+              brick: '#b84418',
+              sky: '#5c94fc'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <!-- TOP HEADER & BRANDING -->
+  <header class="bg-slate-900/90 border-b-4 border-slate-800 p-2 sm:p-3 sticky top-0 z-30 shadow-lg backdrop-blur-md">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & School Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-mario-red rounded-xl border-2 border-white shadow-retro-sm flex items-center justify-center text-white font-pixel text-sm animate-pulse">
+          M
+        </div>
+        <div>
+          <h1 class="font-pixel text-[11px] sm:text-xs text-mario-yellow tracking-wider flex items-center gap-2">
+            SUPER SPREADSHEET BROS
+            <span class="bg-red-600 text-white text-[8px] font-sans px-1.5 py-0.5 rounded font-bold uppercase tracking-normal">Kelas 8</span>
+          </h1>
+          <p class="text-[11px] sm:text-xs text-slate-400 font-medium">SMP NU Assalafie Unggulan • Media Gamifikasi Lab Komputer</p>
+        </div>
+      </div>
+
+      <!-- Navigation & Mode Toggle -->
+      <div class="flex items-center gap-2">
+        <button id="btn-nav-game" class="px-3 py-1.5 rounded-xl font-bold text-xs bg-mario-yellow text-slate-950 shadow-retro-sm transition active:scale-95 flex items-center gap-1.5">
+          <span>🎮</span> Arena Game
+        </button>
+        <button id="btn-nav-leaderboard" class="px-3 py-1.5 rounded-xl font-bold text-xs text-slate-300 hover:bg-slate-800 border border-slate-700 transition active:scale-95 flex items-center gap-1.5">
+          <span>📺</span> Layar Proyektor
+        </button>
+      </div>
+
+      <!-- Live Dashboard HUD -->
+      <div class="flex items-center gap-2 sm:gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 text-xs shadow-inner">
+        <!-- Cloud Status Pill -->
+        <div id="cloud-status-pill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span> Mode Offline
+        </div>
+
+        <!-- Team Name & Class -->
+        <div class="hidden sm:flex flex-col border-l border-slate-800 pl-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Tim Aktif</span>
+          <div class="flex items-center gap-1">
+            <span id="hud-team-name" class="font-bold text-emerald-400 truncate max-w-[100px]">Tim Siswa</span>
+            <span id="hud-class-name" class="text-[10px] bg-slate-800 px-1 rounded text-slate-300 font-semibold">8-A</span>
+          </div>
+        </div>
+
+        <!-- Lives / Hearts -->
+        <div class="flex flex-col items-center border-l border-slate-800 pl-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Nyawa (❤️)</span>
+          <div id="hud-hearts" class="flex gap-0.5 text-red-500 text-sm">
+            <span>❤️</span><span>❤️</span><span>❤️</span>
+          </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="flex flex-col items-center border-l border-slate-800 pl-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Waktu</span>
+          <span id="hud-timer" class="font-pixel text-mario-yellow text-xs sm:text-sm">00:00</span>
+        </div>
+
+        <!-- Score -->
+        <div class="flex flex-col items-center border-l border-slate-800 pl-3">
+          <span class="text-[9px] uppercase font-bold text-slate-500">Koin Skor</span>
+          <span id="hud-score" class="font-pixel text-amber-400 text-xs sm:text-sm">0000</span>
+        </div>
+
+        <!-- Audio Mute Toggle -->
+        <button id="btn-toggle-audio" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition" title="Suara Musik & Efek (Mute/Unmute)">
+          🔊
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-2 sm:p-4 flex flex-col gap-3 relative">
+    
+    <!-- VIEW 1: ARENA GAME -->
+    <div id="view-game" class="flex flex-col gap-3">
+      
+      <!-- Top Stage Banner -->
+      <div class="bg-gradient-to-r from-blue-950/70 via-slate-900 to-indigo-950/70 rounded-xl p-2.5 sm:p-3 border border-slate-800 flex items-center justify-between shadow-inner">
+        <div class="flex items-center gap-2.5">
+          <span id="world-badge" class="bg-mario-yellow text-slate-950 font-pixel text-[10px] sm:text-xs px-2.5 py-1 rounded shadow-retro-sm font-bold">
+            WORLD 1-1
+          </span>
+          <span id="world-title" class="font-bold text-xs sm:text-sm text-slate-200">
+            Grassland Plains: Dasar Excel & Statistik
+          </span>
+        </div>
+        <div class="text-[11px] text-slate-400 hidden md:block">
+          Gunakan <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">A</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">D</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Panah</kbd> untuk Gerak, <kbd class="px-1.5 py-0.5 bg-slate-800 rounded border border-slate-700 text-[10px]">Spasi</kbd> untuk Lompat!
+        </div>
+      </div>
+
+      <!-- Canvas Screen Container -->
+      <div class="relative w-full aspect-[16/9] max-h-[500px] bg-slate-950 rounded-2xl overflow-hidden border-4 border-slate-800 shadow-2xl crt-overlay">
+        <canvas id="gameCanvas" class="w-full h-full block pixelated bg-[#5c94fc]"></canvas>
+
+        <!-- Start Overlay Screen -->
+        <div id="game-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-20">
+          <div class="max-w-md w-full bg-slate-900 border-2 border-slate-700 rounded-2xl p-6 shadow-retro-lg flex flex-col items-center gap-4">
+            <div class="w-16 h-16 bg-mario-yellow rounded-2xl border-4 border-white shadow-retro flex items-center justify-center font-pixel text-2xl text-slate-900 animate-bounce">
+              ?
+            </div>
+            <div>
+              <h2 class="font-pixel text-sm sm:text-base text-mario-yellow mb-2">
+                PETUALANGAN KOMPUTER 8-BIT
+              </h2>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Tembus 4 Dunia rintangan Excel dan algoritma Scratch! Sundul balok tanda tanya <span class="text-mario-yellow font-bold">[?]</span> untuk menjawab tantangan dan kumpulkan koin skor tertinggi untuk kelas kalian.
+              </p>
+            </div>
+
+            <div class="w-full flex flex-col gap-2 pt-2">
+              <button id="btn-start-game" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold font-pixel text-xs rounded-xl shadow-retro border-2 border-white transition active:translate-x-1 active:translate-y-1">
+                MULAI PERMAINAN ▶
+              </button>
+              <button id="btn-open-team-modal" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-semibold rounded-xl border border-slate-700 transition">
+                👥 Registrasi Anggota Tim & Kelas
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Alert Banner -->
+        <div id="canvas-alert" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/95 border-2 border-mario-yellow text-mario-yellow px-4 py-1.5 rounded-full font-pixel text-[10px] shadow-retro-sm opacity-0 pointer-events-none transition-opacity duration-300 z-10 flex items-center gap-2">
+          <span>⭐</span><span id="canvas-alert-text">TANTANGAN DIMULAI!</span>
+        </div>
+      </div>
+
+      <!-- Mobile / Tablet Touch Controls (D-Pad & Jump) -->
+      <div class="flex items-center justify-between gap-4 p-2 bg-slate-900/80 rounded-xl border border-slate-800 sm:hidden">
+        <div class="flex gap-2">
+          <button id="btn-touch-left" class="w-14 h-12 bg-slate-800 active:bg-slate-700 rounded-xl border-2 border-slate-700 flex items-center justify-center text-xl font-bold shadow-retro-sm">
+            ◀
+          </button>
+          <button id="btn-touch-right" class="w-14 h-12 bg-slate-800 active:bg-slate-700 rounded-xl border-2 border-slate-700 flex items-center justify-center text-xl font-bold shadow-retro-sm">
+            ▶
+          </button>
+        </div>
+        <div class="text-[10px] text-center text-slate-400 font-medium">
+          <span class="text-amber-400 font-bold block">TIPS TIM:</span>
+          Pilot jalan, Navigator cek rumus!
+        </div>
+        <div class="flex gap-2">
+          <button id="btn-touch-jump" class="w-16 h-12 bg-mario-red active:bg-red-500 text-white rounded-xl border-2 border-white font-pixel text-xs shadow-retro-sm">
+            JUMP
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Team Roles Strip -->
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div class="bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-blue-600/30 text-blue-400 border border-blue-500/50 flex items-center justify-center font-bold text-xs">
+            🎮
+          </div>
+          <div class="truncate">
+            <div class="text-[9px] uppercase font-bold text-slate-500">Pilot (Kendali)</div>
+            <div id="role-pilot-name" class="font-semibold text-slate-200 truncate">Ahmad</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-600/30 text-amber-400 border border-amber-500/50 flex items-center justify-center font-bold text-xs">
+            📖
+          </div>
+          <div class="truncate">
+            <div class="text-[9px] uppercase font-bold text-slate-500">Navigator (Rumus)</div>
+            <div id="role-navigator-name" class="font-semibold text-slate-200 truncate">Fauzan & Rizky</div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800 p-2 sm:p-2.5 rounded-xl flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-600/30 text-emerald-400 border border-emerald-500/50 flex items-center justify-center font-bold text-xs">
+            🔍
+          </div>
+          <div class="truncate">
+            <div class="text-[9px] uppercase font-bold text-slate-500">Debugger (Validasi)</div>
+            <div id="role-debugger-name" class="font-semibold text-slate-200 truncate">Dewi</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: REALTIME LEADERBOARD (LAYAR PROYEKTOR GURU) -->
+    <div id="view-leaderboard" class="hidden">
+      <div id="leaderboard-content" class="w-full">
+        <!-- Rendered dynamically by LeaderboardManager -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: REGISTRASI TIM & PEMBAGIAN PERAN -->
+  <div id="modal-team" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-2 border-slate-700 w-full max-w-lg rounded-2xl p-5 shadow-retro-lg max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="font-pixel text-xs sm:text-sm text-mario-yellow flex items-center gap-2">
+          <span>👥</span> REGISTRASI TIM LABORATORIUM
+        </h3>
+        <button id="btn-close-team-modal" class="text-slate-400 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <form id="team-setup-form" class="mt-4 space-y-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Kelompok / Tim:</label>
+            <input type="text" id="input-team-name" required value="Cyber Logic 8A" placeholder="Contoh: Algoritma Juara" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-mario-yellow">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Kelas:</label>
+            <select id="input-class-name" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-mario-yellow">
+              <option value="8-A" selected>8-A</option>
+              <option value="8-B">8-B</option>
+              <option value="8-C">8-C</option>
+              <option value="8-D">8-D</option>
+              <option value="8-E">8-E</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+          <div>
+            <label class="block text-[11px] font-semibold text-blue-400 mb-1">🎮 Pilot (Keyboard):</label>
+            <input type="text" id="input-pilot" value="Ahmad" placeholder="Nama siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-amber-400 mb-1">📖 Navigator (Rumus):</label>
+            <input type="text" id="input-navigator" value="Fauzan & Rizky" placeholder="Nama siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-emerald-400 mb-1">🔍 Debugger (Koreksi):</label>
+            <input type="text" id="input-debugger" value="Dewi" placeholder="Nama siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
+          <p class="font-bold text-slate-300">Struktur Kerja Tim Informatika:</p>
+          <p>• <strong>Pilot:</strong> Mengontrol karakter Mario dan mengklik opsi jawaban.</p>
+          <p>• <strong>Navigator:</strong> Menemukan rumus tepat di buku/catatan materi.</p>
+          <p>• <strong>Debugger:</strong> Memeriksa kebenaran jawaban sebelum dieksekusi.</p>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="submit" class="w-full py-2.5 bg-mario-yellow text-slate-950 font-bold font-pixel text-xs rounded-xl shadow-retro-sm border border-white hover:bg-amber-300 transition">
+            SIMPAN & TERAPKAN TIM
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: KUIS INFORMATIKA (TERBUKA SAAT MENYUNDUL BLOK [ ? ]) -->
+  <div id="modal-quiz" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-slate-700 w-full max-w-2xl rounded-2xl shadow-retro-lg overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Quiz Header -->
+      <div class="bg-slate-800 p-3 sm:p-4 border-b border-slate-700 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span id="quiz-world-badge" class="bg-mario-yellow text-slate-950 font-pixel text-[10px] px-2.5 py-0.5 rounded shadow-retro-sm font-bold">
+            WORLD 1
+          </span>
+          <h3 class="font-bold text-sm sm:text-base text-white">
+            Tantangan Laboratorium Informatika
+          </h3>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-amber-400">1x Coba Gagal = -1 ❤️</span>
+        </div>
+      </div>
+
+      <!-- Quiz Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+        <!-- Question Text Card -->
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 shadow-inner">
+          <p id="quiz-question-text" class="text-sm sm:text-base font-semibold text-slate-100 leading-relaxed">
+            Memuat soal...
+          </p>
+        </div>
+
+        <!-- 4 Multiple Choice Options Container -->
+        <div id="quiz-options-container" class="space-y-2 pt-1">
+          <!-- Injected via JavaScript -->
+        </div>
+
+        <!-- Educational Hint Accordion -->
+        <div class="pt-1">
+          <button id="btn-toggle-hint" type="button" class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1.5 transition">
+            <span>💡</span> Butuh petunjuk materi? (Klik di sini)
+          </button>
+          <div id="quiz-hint-box" class="mt-2 p-3 bg-amber-950/40 border border-amber-600/40 rounded-xl text-xs text-amber-200 leading-relaxed hidden">
+            <strong>Petunjuk:</strong> <span id="quiz-hint-text">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Footer Status Feedback -->
+      <div class="bg-slate-950 p-3 sm:p-4 border-t border-slate-800 flex items-center justify-between gap-3">
+        <div id="quiz-feedback" class="text-xs font-medium text-slate-400 flex items-center gap-1.5 truncate">
+          <span>💡</span> Diskusikan bersama rekan satu tim sebelum memilih opsi.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: HASIL PERMAINAN (GAME OVER / VICTORY) -->
+  <div id="modal-gameover" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-4 border-white w-full max-w-md rounded-2xl p-6 text-center shadow-retro-lg flex flex-col items-center gap-4">
+      <div id="gameover-icon" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-retro border-2 border-white bg-amber-400 text-slate-900">
+        🏆
+      </div>
+      <div>
+        <h2 id="gameover-title" class="font-pixel text-base sm:text-lg text-mario-yellow mb-2">
+          VICTORY! KERAJAAN TUNTAS!
+        </h2>
+        <p id="gameover-message" class="text-xs text-slate-300 leading-relaxed">
+          Tim kalian berhasil menuntaskan seluruh tantangan formula Excel & logika Scratch!
+        </p>
+      </div>
+
+      <!-- Stats Recap Card -->
+      <div class="w-full bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs space-y-2 text-left shadow-inner">
+        <div class="flex justify-between">
+          <span class="text-slate-400">Tim & Kelas:</span>
+          <span id="recap-team-name" class="font-bold text-white">-</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Total Koin Skor:</span>
+          <span id="recap-score" class="font-pixel text-amber-400">0</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Sisa Nyawa Tim:</span>
+          <span id="recap-hearts" class="font-bold text-red-400">❤️❤️❤️</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Waktu Tempuh:</span>
+          <span id="recap-time" class="font-mono text-emerald-400">00:00</span>
+        </div>
+      </div>
+
+      <div class="w-full flex flex-col gap-2 pt-1">
+        <button id="btn-view-leaderboard-end" class="w-full py-2.5 bg-mario-yellow hover:bg-amber-300 text-slate-950 font-pixel text-xs rounded-xl shadow-retro-sm border-2 border-white transition">
+          👑 LIHAT PAPAN SKOR PROYEKTOR
+        </button>
+        <button id="btn-restart-game" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-pixel text-xs rounded-xl border border-slate-700 transition">
+          MAIN LAGI / GANTI TIM ↺
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-950/80 border-t border-slate-900 py-2.5 px-4 text-center text-[11px] text-slate-500">
+    <p>Media Pembelajaran Berbasis Gamifikasi Platformer • Mata Pelajaran Informatika Kelas VIII • Terintegrasi Supabase Realtime & Vercel</p>
+  </footer>
+
+  <!-- SCRIPT ENTRY POINT -->
+  <script type="module" src="/src/main.js"></script>
+
+</body>
+</html>

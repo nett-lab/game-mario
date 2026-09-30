@@ -1,0 +1,104 @@
+/* ==============================================================================
+   STYLES: "Super Spreadsheet & Scratch Bros"
+   Retro-Modern 8-Bit Arcade Aesthetics + Sleek Dark UI
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Press+Start+2P&display=swap');
+
+:root {
+  --color-mario-red: #e52521;
+  --color-mario-blue: #0026ff;
+  --color-mario-yellow: #fbd000;
+  --color-mario-green: #43b047;
+  --color-mario-pipe: #22b14c;
+  --color-mario-brick: #b84418;
+  --color-mario-sky: #5c94fc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  background-color: #0b0f19;
+  color: #f1f5f9;
+  overflow-x: hidden;
+}
+
+.font-pixel {
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* Crisp Retro Pixelated Canvas */
+canvas.pixelated {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Retro Arcade Box Shadows */
+.shadow-retro-sm {
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.85);
+}
+
+.shadow-retro {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.85);
+}
+
+.shadow-retro-lg {
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 0.9);
+}
+
+.shadow-retro-yellow {
+  box-shadow: 4px 4px 0px 0px rgba(251, 208, 0, 0.7);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Glowing Neon Borders */
+.border-arcade-glow {
+  box-shadow: 0 0 15px rgba(251, 208, 0, 0.25);
+}
+
+/* Button Active Press State */
+button:active:not(:disabled) {
+  transform: translate(1px, 2px);
+}
+
+/* Subtle CRT Scanline Overlay Effect for Projector Screen */
+.crt-overlay {
+  position: relative;
+}
+.crt-overlay::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 5;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.35;
+}

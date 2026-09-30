@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Production build output
+dist/
+
+# Environment Variables (PENTING: Jangan upload kunci API Supabase ke GitHub!)
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
